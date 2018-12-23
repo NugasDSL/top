@@ -1,0 +1,25 @@
+# Eclipse
+.classpath
+.project
+.settings/
+
+# Intellij
+.idea/
+*.iml
+output*
+*.iws
+resources*
+
+# Mac
+.DS_Store
+
+# Maven
+log/
+target/
+
+#bft-SMaRt
+*currentView
+
+
+bin*
+lib*
