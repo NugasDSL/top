@@ -65,7 +65,7 @@ public class Top implements Server {
     Path cutterDirName = Paths.get(System.getProperty("user.dir"), "blocks");
     private io.grpc.Server txsServer;
 //    private ExecutorService chainCutterExecutor =  Executors.newSingleThreadExecutor();
-    private ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(1);
+    private ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(2);
     private EventLoopGroup gnio = new NioEventLoopGroup(2);
 
 
@@ -149,6 +149,9 @@ public class Top implements Server {
         }
         sts.lastTxTs = max(sts.lastTxTs, b.getSt().getDecided());
         sts.txCount += b.getDataCount();
+        for (Types.Transaction t : b.getDataList()) {
+            txMap.put(t.getId(), b.getHeader().getHeight());
+        }
         synchronized (txMap) {
             txMap.notifyAll();
         }
