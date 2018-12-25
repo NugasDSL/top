@@ -12,7 +12,7 @@ import toy.crypto.DigestMethod;
 import toy.das.atomicBroadcast.RBrodcastService;
 import toy.das.wrb.WrbNode;
 import toy.proto.Types;
-import toy.proto.blockchainServiceGrpc;
+import toy.proto.BlockchainServiceGrpc;
 import toy.servers.CTServer;
 import toy.servers.Server;
 import toy.servers.Statistics;
@@ -333,7 +333,7 @@ public class Top implements Server {
 
 }
 
-class txServer extends blockchainServiceGrpc.blockchainServiceImplBase {
+class txServer extends BlockchainServiceGrpc.BlockchainServiceImplBase {
     private final static org.apache.log4j.Logger logger = org.apache.log4j.Logger.getLogger(txServer.class);
     Top server;
 
