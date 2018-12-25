@@ -51,7 +51,7 @@ public class JTop {
             cli parser = new cli();
             Scanner scan = new Scanner(System.in).useDelimiter("\\n");
             while (true) {
-                System.out.print("Toy>> ");
+                System.out.print("Top>> ");
                 if (!scan.hasNext()) {
                     break;
                 }
