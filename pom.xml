@@ -78,7 +78,7 @@
                             <archive>
                                 <manifest>
                                     <addClasspath>true</addClasspath>
-                                    <mainClass>app.JTop</mainClass>
+                                    <mainClass>top.app.JTop</mainClass>
                                 </manifest>
                             </archive>
                             <descriptorRefs>
@@ -128,7 +128,7 @@
     <dependencies>
         <dependency>
             <groupId>toy</groupId>
-            <artifactId>toy</artifactId>
+            <artifactId>toy-core</artifactId>
             <version>1.0</version>
             <!--<scope>system</scope>-->
             <!--<systemPath>${basedir}/../toy/bin/toy-1.0.jar</systemPath>-->

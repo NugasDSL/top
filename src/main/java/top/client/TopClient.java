@@ -1,10 +1,10 @@
-package topClient;
+package top.client;
 
 import com.google.protobuf.ByteString;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
-import proto.Types;
-import proto.blockchainServiceGrpc;
+import toy.proto.Types;
+import toy.proto.blockchainServiceGrpc;
 
 public class TopClient {
     private final static org.apache.log4j.Logger logger = org.apache.log4j.Logger.getLogger(TopClient.class);

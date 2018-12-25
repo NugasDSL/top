@@ -1,4 +1,4 @@
-package app;
+package top.app;
 
 import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Options;

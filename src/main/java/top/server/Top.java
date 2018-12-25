@@ -1,25 +1,23 @@
-package top;
+package top.server;
 
-import blockchain.Blockchain;
 import com.google.protobuf.ByteString;
-import config.Node;
-import crypto.DigestMethod;
-import das.atomicBroadcast.RBrodcastService;
-import das.wrb.WrbNode;
+
 import io.grpc.netty.NettyServerBuilder;
 import io.grpc.stub.StreamObserver;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
-import proto.Types;
-import proto.blockchainServiceGrpc.blockchainServiceImplBase;
-import servers.CTServer;
-import servers.Server;
-import servers.Statistics;
-import servers.ToyServer;
-
+import toy.blockchain.Blockchain;
+import toy.config.Node;
+import toy.crypto.DigestMethod;
+import toy.das.atomicBroadcast.RBrodcastService;
+import toy.das.wrb.WrbNode;
+import toy.proto.Types;
+import toy.proto.blockchainServiceGrpc;
+import toy.servers.CTServer;
+import toy.servers.Server;
+import toy.servers.Statistics;
+import toy.servers.ToyServer;
 import java.io.IOException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -37,8 +35,7 @@ public class Top implements Server {
     private final static org.apache.log4j.Logger logger = org.apache.log4j.Logger.getLogger(Top.class);
 
     private WrbNode rmf;
-    boolean up = false;
-    final HashMap<Types.txID, Integer> txMap = new HashMap<>();
+    private final HashMap<Types.txID, Integer> txMap = new HashMap<>();
     private RBrodcastService deliverFork;
     private RBrodcastService sync;
     private int n;
@@ -50,7 +47,6 @@ public class Top implements Server {
     private final Blockchain bc;
     private int id;
     private int c;
-    private String type;
     private AtomicBoolean stopped = new AtomicBoolean(false);
     private Statistics sts = new Statistics();
     private Thread deliverThread = new Thread(() -> {
@@ -61,19 +57,16 @@ public class Top implements Server {
             logger.debug(format("G-%d interrupted while delivering from group", id));
         }
     });
-    private int maxTx;
-    Path cutterDirName = Paths.get(System.getProperty("user.dir"), "blocks");
     private io.grpc.Server txsServer;
-//    private ExecutorService chainCutterExecutor =  Executors.newSingleThreadExecutor();
     private ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(2);
     private EventLoopGroup gnio = new NioEventLoopGroup(2);
+    private int listenerPort;
 
-
-    public Top(String addr, int port, int id, int f, int c, int tmo, int tmoInterval,
-               int maxTx, boolean fastMode, ArrayList<Node> cluster, String bbcConfig, String panicConfig,
-               String syncConfig, String type, String serverCrt, String serverPrivKey, String caRoot) {
+    public Top(String addr, int listenerPort, int wrbPort, int id, int f, int c, int tmo, int tmoInterval
+               , int maxTx, boolean fastMode, ArrayList<Node> cluster, String bbcConfig, String panicConfig
+               , String syncConfig, String serverCrt, String serverPrivKey, String caRoot) {
         n = 3 *f +1;
-        this.maxTx = maxTx;
+        this.listenerPort = listenerPort;
         lastDelivered = new int[c][];
         lastGCpoint = new int[c];
         for (int i = 0 ; i < c ; i++) {
@@ -87,17 +80,12 @@ public class Top implements Server {
         this.c = c;
         this.group = new ToyServer[c];
         this.id = id;
-        if (type.equals("r")) {
-            rmf = new WrbNode(c, id, addr, port, f, tmo, tmoInterval, cluster, bbcConfig, serverCrt, serverPrivKey, caRoot);
-        }
+        rmf = new WrbNode(c, id, addr, wrbPort, f, tmo, tmoInterval, cluster, bbcConfig, serverCrt, serverPrivKey, caRoot);
         deliverFork = new RBrodcastService(c, id, panicConfig);
         sync = new RBrodcastService(c, id, syncConfig);
-        this.type = type;
-        if (type.equals("r")) {
-            for (int i = 0 ; i < c ; i++) {
-                group[i] = new CTServer(addr, port, id, i, f, maxTx,
-                        fastMode, rmf, deliverFork, sync);
-            }
+        for (int i = 0 ; i < c ; i++) {
+            group[i] = new CTServer(addr, wrbPort, id, i, f, maxTx,
+                    fastMode, rmf, deliverFork, sync);
         }
         bc = group[0].initBC(id, -1);
     }
@@ -193,7 +181,7 @@ public class Top implements Server {
     public void start() {
         try {
             txsServer = NettyServerBuilder
-                    .forPort(9876)
+                    .forPort(listenerPort)
                     .executor(executor)
                     .bossEventLoopGroup(gnio)
                     .workerEventLoopGroup(gnio)
@@ -256,7 +244,6 @@ public class Top implements Server {
             group[i].serve();
         }
         deliverThread.start();
-        up = true;
     }
 
     @Override
@@ -346,7 +333,7 @@ public class Top implements Server {
 
 }
 
-class txServer extends blockchainServiceImplBase {
+class txServer extends blockchainServiceGrpc.blockchainServiceImplBase {
     private final static org.apache.log4j.Logger logger = org.apache.log4j.Logger.getLogger(txServer.class);
     Top server;
 

@@ -1,8 +1,7 @@
-package app;
-
-import config.Config;
-import servers.Server;
-import top.Top;
+package top.app;
+import top.server.Top;
+import toy.config.Config;
+import toy.servers.Server;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -39,19 +38,15 @@ public class JTop {
             }
 
             int serverID = Integer.parseInt(argv[0]);
+            int listenerPort = Integer.parseInt(argv[1]);
             Config.setConfig(config, serverID);
             logger = org.apache.log4j.Logger.getLogger(cli.class);
-            type = argv[1];
-            logger.debug("type is " + type);
-            switch (type) {
-                default:
-                    s = new Top(Config.getAddress(serverID), Config.getPort(serverID), serverID, Config.getF(), Config.getC(),
-                            Config.getTMO(), Config.getTMOInterval(), Config.getMaxTransactionsInBlock(), Config.getFastMode(),
-                            Config.getCluster(), Config.getRMFbbcConfigHome(), Config.getPanicRBConfigHome(),
-                            Config.getSyncRBConfigHome(), type,
-                            Config.getServerCrtPath(), Config.getServerTlsPrivKeyPath(), Config.getCaRootPath());
-                    break;
-            }
+
+            s = new Top(Config.getAddress(serverID), listenerPort, Config.getPort(serverID), serverID, Config.getF(), Config.getC()
+                    , Config.getTMO(), Config.getTMOInterval(), Config.getMaxTransactionsInBlock(), Config.getFastMode()
+                    , Config.getCluster(), Config.getRMFbbcConfigHome(), Config.getPanicRBConfigHome()
+                    , Config.getSyncRBConfigHome()
+                    , Config.getServerCrtPath(), Config.getServerTlsPrivKeyPath(), Config.getCaRootPath());
 
             cli parser = new cli();
             Scanner scan = new Scanner(System.in).useDelimiter("\\n");
