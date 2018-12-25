@@ -36,7 +36,7 @@ public class TopClient {
         }
     }
 
-    
+
     public Types.approved getTx(Types.read r) {
         return stub.getTransaction(r);
     }
