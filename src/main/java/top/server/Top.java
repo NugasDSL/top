@@ -20,20 +20,22 @@ import toy.servers.ToyServer;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.atomic.AtomicBoolean;
-
 import static java.lang.Math.max;
 import static java.lang.Math.min;
 import static java.lang.String.format;
 
+/**
+ * An implementation of Toy. Top server consist of multiple instances of Toy (named <i>channels</i>) and they all run on
+ * the same underling infrastructure. This way, when one of the channels waits for a message, other channels can run. As
+ * a result the CPU is fully utilized and the tthroughput increases.
+ */
 public class Top implements Server {
     private final static org.apache.log4j.Logger logger = org.apache.log4j.Logger.getLogger(Top.class);
-
     private WrbNode rmf;
     private final HashMap<Types.txID, Integer> txMap = new HashMap<>();
     private RBrodcastService deliverFork;
@@ -62,6 +64,27 @@ public class Top implements Server {
     private EventLoopGroup gnio = new NioEventLoopGroup(2);
     private int listenerPort;
 
+    /**
+     * Constructor
+     * @param addr the server ip address
+     * @param listenerPort the port on wich the server listen for clients' requests
+     * @param wrbPort the server WRB port
+     * @param id the server ID
+     * @param f an upper bound on the number of the faulty nodes
+     * @param c the number of channels
+     * @param tmo the minimal time-out value that WRB may wait
+     * @param tmoInterval the time-out interval to add to tmo if wrb was not able to deliver a message
+     * @param maxTx max transactions per block
+     * @param fastMode indicates if fast mode is active. When fast mode is active Toy tries to perform a single communication round
+     *                 protocol/
+     * @param cluster list of Nodes that depicts the cluste participents
+     * @param bbcConfig path to wrb configuration directory
+     * @param panicConfig path to panic configuration directory
+     * @param syncConfig path to panic configuration directory
+     * @param serverCrt path to the server certificate file
+     * @param serverPrivKey path to the server ssl private key file
+     * @param caRoot path to the ca root certificate. If equals to "" the server trusts any certificate
+     */
     public Top(String addr, int listenerPort, int wrbPort, int id, int f, int c, int tmo, int tmoInterval
                , int maxTx, boolean fastMode, ArrayList<Node> cluster, String bbcConfig, String panicConfig
                , String syncConfig, String serverCrt, String serverPrivKey, String caRoot) {
@@ -130,7 +153,7 @@ public class Top implements Server {
         }
     }
 
-    void updateStat(Types.Block b) {
+    private void updateStat(Types.Block b) {
         if (b.getHeader().getHeight() == 1) {
             sts.firstTxTs = b.getSt().getDecided();
             sts.txSize = b.getData(0).getSerializedSize();
@@ -145,13 +168,17 @@ public class Top implements Server {
         }
     }
 
+    /**
+     * Get statistic on the execution till now. Meant for testing.
+     * @return a class that summarizes some statistics on the execution
+     */
     public Statistics getStatistics() {
         sts.totalDec = rmf.getTotolDec();
         sts.optemisticDec = rmf.getOptemisticDec();
         return sts;
     }
 
-    void gc(int origHeight, int sender, int channel) {
+    private void gc(int origHeight, int sender, int channel) {
         if (sender < 0 || sender > n - 1 || channel < 0 || channel > c -1 || origHeight < 0) {
             logger.debug(format("G-%d GC invalid argument [OrigHeight=%d ; sender=%d ; channel=%d]"
                     ,id, origHeight, sender, channel));
@@ -165,7 +192,7 @@ public class Top implements Server {
             gcForChannel(i);
         }
     }
-    void gcForChannel(int channel) {
+    private void gcForChannel(int channel) {
         int minHeight = lastDelivered[channel][0];
         for (int i = 0 ; i < n ; i++) {
             minHeight = min(minHeight, lastDelivered[channel][i]);
@@ -178,20 +205,9 @@ public class Top implements Server {
         lastGCpoint[channel] = minHeight;
 
     }
+
+    @Override
     public void start() {
-        try {
-            txsServer = NettyServerBuilder
-                    .forPort(listenerPort)
-                    .executor(executor)
-                    .bossEventLoopGroup(gnio)
-                    .workerEventLoopGroup(gnio)
-                    .addService(new txServer(this))
-                    .build()
-                    .start();
-            logger.info("starting tx Server");
-        } catch (IOException e) {
-            logger.error("", e);
-        }
         CountDownLatch latch = new CountDownLatch(3);
         new Thread(() -> {
             this.rmf.start();
@@ -217,6 +233,7 @@ public class Top implements Server {
         }
     }
 
+    @Override
     public void shutdown() {
         stopped.set(true);
         deliverThread.interrupt();
@@ -239,11 +256,26 @@ public class Top implements Server {
         txsServer.shutdown();
     }
 
+
+    @Override
     public void serve() {
         for (int i = 0 ; i < c ; i++) {
             group[i].serve();
         }
         deliverThread.start();
+        try {
+            txsServer = NettyServerBuilder
+                    .forPort(listenerPort)
+                    .executor(executor)
+                    .bossEventLoopGroup(gnio)
+                    .workerEventLoopGroup(gnio)
+                    .addService(new txServer(this))
+                    .build()
+                    .start();
+            logger.info("starting tx Server");
+        } catch (IOException e) {
+            logger.error("", e);
+        }
     }
 
     @Override
@@ -264,6 +296,7 @@ public class Top implements Server {
         return group[chan].addTransaction(ntx);
     }
 
+    @Override
     public int isTxPresent(String txID) {
         for (int i = 0 ; i < c ; i++) {
             int ret = group[i].isTxPresent(txID);
@@ -272,6 +305,12 @@ public class Top implements Server {
         return -1;
     }
 
+    /**
+     * Get transaction by its ID. This is a blocking call.
+     * @param txID the transaction's ID to retrieve
+     * @return the transaction when approved, possibly DefaultInstance if was interrupted.
+     * @throws InterruptedException
+     */
     Types.approved getTransaction(Types.txID txID) throws InterruptedException {
         Types.Block b = null;
         synchronized (txMap) {
@@ -281,26 +320,32 @@ public class Top implements Server {
         }
         if (txMap.containsKey(txID)) {
             b = nonBlockingDeliver(txMap.get(txID));
-        }
-        if (b == null) return Types.approved.getDefaultInstance();
-        for (Types.Transaction t : b.getDataList()) {
-            if (t.getId().getTxID().equals(txID.getTxID())) {
-                return Types.approved.newBuilder().setSt(b.getSt()).setTx(t).build();
+            for (Types.Transaction t : b.getDataList()) {
+                if (t.getId().getTxID().equals(txID.getTxID())) {
+                    return Types.approved.newBuilder().setSt(b.getSt()).setTx(t).build();
+                }
             }
         }
+
         return Types.approved.getDefaultInstance();
     }
 
+    /**
+     * Deliver the index_th block. This is a blocking call.
+     * @param index the index of the block to be delivered
+     * @return the index_th block
+     * @throws InterruptedException
+     */
     public Types.Block deliver(int index) throws InterruptedException {
         synchronized (bc) {
             while (bc.getHeight() < index) {
                 bc.wait();
             }
-            Types.Block b = bc.getBlock(index);
-            return b;
+            return bc.getBlock(index);
         }
     }
 
+    @Override
     public Types.Block nonBlockingDeliver(int index) {
         if (bc.getHeight() < index) return null;
         Types.Block b = bc.getBlock(index);
@@ -320,11 +365,14 @@ public class Top implements Server {
 
 }
 
+/**
+ * A gRPC server that responsible to handle the clients requests.
+ */
 class txServer extends BlockchainServiceGrpc.BlockchainServiceImplBase {
     private final static org.apache.log4j.Logger logger = org.apache.log4j.Logger.getLogger(txServer.class);
     Top server;
 
-    public txServer(Top server) {
+    txServer(Top server) {
         super();
         this.server = server;
     }
