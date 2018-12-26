@@ -312,19 +312,6 @@ public class Top implements Server {
         return id;
     }
 
-    @Override
-    public void setByzSetting(boolean fullByz, List<List<Integer>> groups) {
-      /*
-        Currently not supported
-       */
-    }
-
-    @Override
-    public void setAsyncParam(int maxTime) {
-       /*
-        Currently not supported
-       */
-    }
 
     @Override
     public int getBCSize() {
