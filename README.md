@@ -63,3 +63,8 @@ Types.accepted addTx(byte[] data)
 Types.approved getTx(Types.read r)
 ```
 (this implementation is much alike the one demonstrated in Toy).
+
+## Useful Links
+1. [javadoc](https://nugasdsl.github.io/top/apidocs/overview-summary.html)
+2. [Paper]()
+
