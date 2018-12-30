@@ -73,7 +73,7 @@ Types.approved getTx(Types.read r)
 ```
 (this implementation is much alike the one demonstrated in Toy).
 
-## Useful Links
+## Documentation
 1. [javadoc](https://nugasdsl.github.io/top/apidocs/overview-summary.html)
 2. [Paper]()
 
