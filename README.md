@@ -59,8 +59,8 @@ Note that you may pass as a third parameter a different `path/to/config.toml` th
 #### Server CLI
 Command | Description
 --------|------------
-help | print the CLI description
-init | initiate the server including its bft-SMaRt sub-platform
+help | prints the CLI description
+init | initiates the server including its bft-SMaRt sub-platform
 serve| starts serving clients requests
 stop | stops serving client requests and stops participating the algorithm
 quit | exit the CLI
