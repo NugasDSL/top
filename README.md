@@ -59,9 +59,11 @@ Note that you may pass as a third parameter a different `path/to/config.toml` th
 #### Server CLI
 Command | Description
 --------|------------
-help| print the CLI description
-init| initiate the server including its bft-SMaRt sub-platform
-serve| start serve clients requests
+help | print the CLI description
+init | initiate the server including its bft-SMaRt sub-platform
+serve| starts serving clients requests
+stop | stops serving client requests and stops participating the algorithm
+quit | exit the CLI
 ### Deploy a Client
 You can deploy your own client using the IDL we defined in Toy. We also created a simple client in 
 `src/main/java/top/client/TopClient.java`. The client exposes two simple methods: 

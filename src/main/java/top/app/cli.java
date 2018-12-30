@@ -11,10 +11,9 @@ public class cli {
         public cli() {
             options.addOption("help", "print this message");
             options.addOption("init", "init the server");
-            options.addOption("serve", "start the server\n" +
-                    "Note that before lunching the command, all other servers has to be initialized first");
+            options.addOption("serve", "start serving clients requests");
             options.addOption("stop", "terminate the server");
-            options.addOption("quit", "exit Toy terminal");
+            options.addOption("quit", "exit Top terminal");
         }
 
         void parse(String[] args) {
