@@ -44,7 +44,8 @@ More about Top's configuration can be found in the [WiKi](https://github.com/Nug
 ### Logging
 You are supplied with the `src/main/resources/log4j.properties` that configures Top's logger. You may change it as you 
 wish to adjust the logging level and the logger output to your needs.
-### Start Server
+### Server
+#### Run a Server
 The default configuration (supplied in `src/main/resources`) establishes a single server cluster.
 To run the server type:
 ```
@@ -55,6 +56,12 @@ where `$ID` is the server id and `$PORT` is the port to which the client should 
 Note that you may pass as a third parameter a different `path/to/config.toml` then the default 
 `src/main/resources/config.toml`
 
+#### Server CLI
+Command | Description
+--------|------------
+help| print the CLI description
+init| initiate the server including its bft-SMaRt sub-platform
+serve| start serve clients requests
 ### Deploy a Client
 You can deploy your own client using the IDL we defined in Toy. We also created a simple client in 
 `src/main/java/top/client/TopClient.java`. The client exposes two simple methods: 
