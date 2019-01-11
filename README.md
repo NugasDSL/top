@@ -11,7 +11,7 @@ As Toy, Top also assumes a Byzantine partial synchronous environment in which th
 _Partial synchronous_ means that after an unknown time _t_ there is an unknown upper bound _k_ on the messages transfer delays.
 
 ### Papers
-This work is an implementation of the TOY algorithm described in TBA
+This work is an implementation of the TOY algorithm described in [https://arxiv.org/abs/1901.03279](https://arxiv.org/abs/1901.03279)
 
 ## Getting Started
 ### Installation (for Ubuntu)
@@ -75,5 +75,5 @@ Types.approved getTx(Types.read r)
 
 ## Documentation
 1. [javadoc](https://nugasdsl.github.io/top/apidocs/overview-summary.html)
-2. [Paper]()
+2. [Paper](https://arxiv.org/abs/1901.03279)
 
