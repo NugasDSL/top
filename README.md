@@ -17,7 +17,7 @@ This work is an implementation of the TOY algorithm described in [https://arxiv.
 ### Installation (for Ubuntu)
 1. Install [Maven](https://maven.apache.org/):
     * `sudo apt install maven` 
-1. Download the Toy:
+1. Download Toy:
     * `git pull https://github.com/NugasDSL/toy.git`.
     * Or via this [link](https://github.com/NugasDSL/toy/archive/master.zip).
 1. Download Top
