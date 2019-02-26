@@ -13,9 +13,9 @@ import toy.das.atomicBroadcast.RBrodcastService;
 import toy.das.wrb.WrbNode;
 import toy.proto.Types;
 import toy.proto.BlockchainServiceGrpc;
-import toy.servers.CTServer;
 import toy.servers.Server;
 import toy.servers.Statistics;
+import toy.servers.ToyBaseServer;
 import toy.servers.ToyServer;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -43,7 +43,7 @@ public class Top implements Server {
     private int n;
     private int gcCount = 0;
     private int gcLimit = 1;
-    private ToyServer[] group;
+    private ToyBaseServer[] group;
     private int[][] lastDelivered;
     private int[] lastGCpoint;
     private final Blockchain bc;
@@ -107,7 +107,7 @@ public class Top implements Server {
         deliverFork = new RBrodcastService(c, id, panicConfig);
         sync = new RBrodcastService(c, id, syncConfig);
         for (int i = 0 ; i < c ; i++) {
-            group[i] = new CTServer(addr, wrbPort, id, i, f, maxTx,
+            group[i] = new ToyServer(addr, wrbPort, id, i, f, maxTx,
                     fastMode, rmf, deliverFork, sync);
         }
         bc = group[0].initBC(id, -1);

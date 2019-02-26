@@ -9,6 +9,7 @@
 output*
 *.iws
 
+
 # Mac
 .DS_Store
 
@@ -22,3 +23,5 @@ target/
 
 bin*
 lib*
+scripts*
+Configurations*
