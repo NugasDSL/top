@@ -1,3 +1,4 @@
+![No Maintenance Intended](http://unmaintained.tech/badge.svg)
 # Deprecated 
 The current working project is at https://github.com/TopToy/TopToy
 # Top - A Toys Orchestrating Platform
